@@ -18,7 +18,7 @@ type AddAllBalanceService struct {
 // デバッグ用に少なめに設定
 const maxGettableCountAtOnce = 100
 
-func (a AddAllBalanceService) Exec(amount uint, idempotentKey string) error {
+func (a AddAllBalanceService) Exec (amount uint, idempotentKey string) error {
 	db := db.GetDB()
 	return db.Transaction(func(tx *gorm.DB) error {
 		idempotentChecker := a.IdempotentCheckerRepository.FindByIdempotentKey(idempotentKey)
@@ -27,10 +27,7 @@ func (a AddAllBalanceService) Exec(amount uint, idempotentKey string) error {
 		if idempotentChecker.ID != 0 {
 			return nil
 		} else {
-			err := a.IdempotentCheckerRepository.SaveTx(tx, idempotentKey)
-			if err != nil {
-				tx.Rollback()
-			}
+			a.IdempotentCheckerRepository.SaveTx(tx, idempotentKey)
 		}
 
 		// これと60行目ののwg.Wait()で全てのgoroutineの処理が完了するまで終了しない
@@ -49,10 +46,7 @@ func (a AddAllBalanceService) Exec(amount uint, idempotentKey string) error {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
-				err := a.BalanceRepository.UpdateBalancesTx(tx, ids, int(amount))
-				if err != nil {
-					tx.Rollback()
-				}
+				a.BalanceRepository.UpdateBalancesTx(tx, ids, int(amount))
 			}()
 
 			offset += maxGettableCountAtOnce
