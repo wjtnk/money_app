@@ -24,6 +24,15 @@ func (b BalanceRepository) FindByUserId(userId string) (domain.Balance, error) {
 	return balance, nil
 }
 
+func (b BalanceRepository) GetIds(limit uint, offset uint) []uint {
+	var ids []uint
+	var balances []domain.Balance
+
+	db := db.GetDB()
+	db.Limit(limit).Offset(offset).Find(&balances).Pluck("id", &ids)
+	return ids
+}
+
 func (b BalanceRepository) Create(amount int, userId string) {
 	balance := domain.Balance{Amount: amount, UserId: userId}
 	db := db.GetDB()
@@ -36,20 +45,10 @@ func (b BalanceRepository) UpdateTx(tx *gorm.DB, id uint, amount int) {
 	tx.Where("id = ?", id).First(&balance).UpdateColumn("amount", amount)
 }
 
-func (b BalanceRepository) UpdateBalances(Ids []uint, amount int) {
+func (b BalanceRepository) UpdateBalancesTx(tx *gorm.DB, Ids []uint, amount int) {
 	balance := domain.Balance{}
-	db := db.GetDB()
-	db.Model(&balance).Where("id IN (?)", Ids).Updates(
+	tx.Model(&balance).Where("id IN (?)", Ids).Updates(
 		map[string]interface{}{
 			"amount": gorm.Expr("amount + ?", amount),
 		})
-}
-
-func (b BalanceRepository) GetIds(limit uint, offset uint) []uint {
-	var ids []uint
-	var balances []domain.Balance
-
-	db := db.GetDB()
-	db.Limit(limit).Offset(offset).Find(&balances).Pluck("id", &ids)
-	return ids
 }
