@@ -27,7 +27,7 @@ func (a AddAllBalanceService) Exec(amount uint, idempotentKey string) error {
 		if idempotentChecker.ID != 0 {
 			return nil
 		} else {
-			a.IdempotentCheckerRepository.Save(idempotentKey)
+			a.IdempotentCheckerRepository.SaveTx(tx, idempotentKey)
 		}
 
 		var wg sync.WaitGroup

@@ -17,13 +17,6 @@ func (i *IdempotentCheckerRepository) FindByIdempotentKey(idempotentKey string) 
 	return idempotentChecker
 }
 
-func (i *IdempotentCheckerRepository) Save(idempotentKey string) {
-	idempotentChecker := domain.IdempotentChecker{IdempotentKey: idempotentKey}
-	db := db.GetDB()
-	db.NewRecord(idempotentChecker)
-	db.Create(&idempotentChecker)
-}
-
 // SaveTx トランザクション使用時の保存
 func (i *IdempotentCheckerRepository) SaveTx(tx *gorm.DB, idempotentKey string) {
 	idempotentChecker := domain.IdempotentChecker{IdempotentKey: idempotentKey}
