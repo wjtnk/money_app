@@ -40,15 +40,26 @@ func (b BalanceRepository) Create(amount int, userId string) {
 }
 
 // UpdateTx トランザクション使用時の更新
-func (b BalanceRepository) UpdateTx(tx *gorm.DB, id uint, amount int) {
+func (b BalanceRepository) UpdateTx(tx *gorm.DB, id uint, amount int) error {
 	balance := domain.Balance{}
-	tx.Where("id = ?", id).First(&balance).UpdateColumn("amount", amount)
+	err := tx.Where("id = ?", id).First(&balance).UpdateColumn("amount", amount).Error
+
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func (b BalanceRepository) UpdateBalancesTx(tx *gorm.DB, Ids []uint, amount int) {
+func (b BalanceRepository) UpdateBalancesTx(tx *gorm.DB, Ids []uint, amount int) error {
 	balance := domain.Balance{}
-	tx.Model(&balance).Where("id IN (?)", Ids).Updates(
+
+	err := tx.Model(&balance).Where("id IN (?)", Ids).Updates(
 		map[string]interface{}{
 			"amount": gorm.Expr("amount + ?", amount),
-		})
+		}).Error
+
+	if err != nil {
+		return err
+	}
+	return nil
 }
