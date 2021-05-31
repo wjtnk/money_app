@@ -18,8 +18,8 @@ func (i *IdempotentCheckerRepository) FindByIdempotentKey(idempotentKey string) 
 }
 
 // SaveTx トランザクション使用時の保存
-func (i *IdempotentCheckerRepository) SaveTx(tx *gorm.DB, idempotentKey string) {
+func (i *IdempotentCheckerRepository) SaveTx(tx *gorm.DB, idempotentKey string) error {
 	idempotentChecker := domain.IdempotentChecker{IdempotentKey: idempotentKey}
 	tx.NewRecord(idempotentChecker)
-	tx.Create(&idempotentChecker)
+	return tx.Create(&idempotentChecker).Error
 }

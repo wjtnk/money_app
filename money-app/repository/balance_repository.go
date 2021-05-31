@@ -53,13 +53,8 @@ func (b BalanceRepository) UpdateTx(tx *gorm.DB, id uint, amount int) error {
 func (b BalanceRepository) UpdateBalancesTx(tx *gorm.DB, Ids []uint, amount int) error {
 	balance := domain.Balance{}
 
-	err := tx.Model(&balance).Where("id IN (?)", Ids).Updates(
+	return tx.Model(&balance).Where("id IN (?)", Ids).Updates(
 		map[string]interface{}{
 			"amount": gorm.Expr("amount + ?", amount),
 		}).Error
-
-	if err != nil {
-		return err
-	}
-	return nil
 }

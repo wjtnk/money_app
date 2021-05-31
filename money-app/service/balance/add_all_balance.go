@@ -27,7 +27,10 @@ func (a AddAllBalanceService) Exec(amount uint, idempotentKey string) error {
 		if idempotentChecker.ID != 0 {
 			return nil
 		} else {
-			a.IdempotentCheckerRepository.SaveTx(tx, idempotentKey)
+			err := a.IdempotentCheckerRepository.SaveTx(tx, idempotentKey)
+			if err != nil {
+				tx.Rollback()
+			}
 		}
 
 		var wg sync.WaitGroup
@@ -42,7 +45,10 @@ func (a AddAllBalanceService) Exec(amount uint, idempotentKey string) error {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
-				a.BalanceRepository.UpdateBalancesTx(tx, ids, int(amount))
+				err := a.BalanceRepository.UpdateBalancesTx(tx, ids, int(amount))
+				if err != nil {
+					tx.Rollback()
+				}
 			}()
 
 			offset += maxGettableCountAtOnce
