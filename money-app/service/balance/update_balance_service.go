@@ -19,6 +19,7 @@ type UpdateBalanceService struct {
 // (UpdateBalanceService => u)
 func (u UpdateBalanceService) Exec(userId string, amount int, idempotentKey string) error {
 	db := db.GetDB()
+
 	return db.Transaction(func(tx *gorm.DB) error {
 		idempotentChecker := u.IdempotentCheckerRepository.FindByIdempotentKey(idempotentKey)
 

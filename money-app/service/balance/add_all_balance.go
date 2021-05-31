@@ -33,6 +33,7 @@ func (a AddAllBalanceService) Exec(amount uint, idempotentKey string) error {
 			}
 		}
 
+		// これと60行目ののwg.Wait()で全てのgoroutineの処理が完了するまで終了しない
 		var wg sync.WaitGroup
 		offset := 0
 
@@ -42,6 +43,9 @@ func (a AddAllBalanceService) Exec(amount uint, idempotentKey string) error {
 				break
 			}
 
+			// wg.Add(n)でn個の並行処理が存在することを伝える
+			// UpdateBalancesTxの終了を待たずに次のループへ
+			// ここの処理だけキューに任せるみたいなイメージ
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
@@ -54,6 +58,7 @@ func (a AddAllBalanceService) Exec(amount uint, idempotentKey string) error {
 			offset += maxGettableCountAtOnce
 		}
 
+		// 全ての処理がwg.Done()されるまで終了しない
 		wg.Wait()
 		return nil
 	})
